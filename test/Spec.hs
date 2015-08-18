@@ -1,4 +1,4 @@
-import Rep
+import Read
 import Test.Hspec
 import Control.Exception (evaluate)
 
@@ -7,6 +7,6 @@ main = hspec $
   describe "Rep" $
     describe "Read" $
       it "parses the data" $
-        Rep.read "(+ 1 2)" `shouldBe` List(Atom(+) Atom 1 Atom 2)
+        Read.read "2" `shouldBe` Right (Num 2)
 
 

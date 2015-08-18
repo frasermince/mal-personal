@@ -6,8 +6,8 @@ module Rep
 import Read
 
 rep :: String -> String
-rep = Rep.print . Rep.eval . Read.read
-
+--rep = Rep.print . Rep.eval . Read.read
+rep x = x
 
 eval :: String -> String
 eval x = x

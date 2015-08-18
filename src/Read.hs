@@ -1,5 +1,6 @@
 module Read
 ( Read.read
+, Sexp(..)
 ) where
 import Text.Parsec
 import Text.Parsec.Char
@@ -7,8 +8,8 @@ import Text.Parsec.String
 import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
 import Control.Monad (void, ap, (>>))
 
-read :: String -> String
-read x = x
+read :: String -> Either ParseError Sexp
+read = parseWithWhitespace sexp
 
 data Sexp = Num Integer | Symbol String
             deriving (Eq,Show)
