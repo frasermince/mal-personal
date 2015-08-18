@@ -1,15 +1,13 @@
 module Rep
 ( Rep.rep
-, Rep.read
 , Rep.eval
 , Rep.print
 ) where
+import Read
 
 rep :: String -> String
-rep = Rep.print . Rep.eval . Rep.read
+rep = Rep.print . Rep.eval . Read.read
 
-read :: String -> String
-read x = x
 
 eval :: String -> String
 eval x = x
