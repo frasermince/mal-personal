@@ -18,7 +18,15 @@ parseWithEof :: Parser a -> String -> Either ParseError a
 parseWithEof p = parse (p <* eof) ""
 
 data Sexp = Num Integer | Symbol String | List [Sexp]
-            deriving (Eq,Show)
+            deriving (Eq)
+
+instance Show Sexp where
+  show (Num x) = show x
+  show (Symbol x) = x
+  show (List sexps) = "(" ++ foldl convertToString "" sexps ++ ")"
+    where
+      convertToString "" sexp = show sexp
+      convertToString accumulator sexp = accumulator ++ " " ++ show sexp
 
 sexp :: Parser Sexp
 sexp = list <|> atom

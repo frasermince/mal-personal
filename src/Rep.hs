@@ -4,13 +4,13 @@ module Rep
 , Rep.print
 ) where
 import Read
+import Text.Parsec
 
 rep :: String -> String
---rep = Rep.print . Rep.eval . Read.read
-rep x = x
+rep = Rep.print . Read.read
 
-eval :: String -> String
+eval :: Sexp -> Sexp
 eval x = x
 
-print :: String -> String
-print x = x
+print :: Either ParseError Sexp -> String
+print = either show show
