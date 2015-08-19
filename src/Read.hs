@@ -11,20 +11,20 @@ import Control.Monad (void, ap, (>>))
 read :: String -> Either ParseError Sexp
 read = parseWithWhitespace sexp
 
-data Sexp = Num Integer | Symbol String
-            deriving (Eq,Show)
-
-sexp :: Parser Sexp
-sexp = atom
+parseWithWhitespace :: Parser a -> String -> Either ParseError a
+parseWithWhitespace p = parseWithEof (whitespace >> p)
 
 parseWithEof :: Parser a -> String -> Either ParseError a
 parseWithEof p = parse (p <* eof) ""
 
-parseWithWhitespace :: Parser a -> String -> Either ParseError a
-parseWithWhitespace p = parseWithEof (whitespace >> p)
+data Sexp = Num Integer | Symbol String | List [Sexp]
+            deriving (Eq,Show)
+
+sexp :: Parser Sexp
+sexp = list <|> atom
 
 atom :: Parser Sexp
-atom = num <|> symbol 
+atom = num <|> symbol
 
 whitespace :: Parser ()
 whitespace = void $ many $ oneOf " \n\t"
@@ -36,9 +36,9 @@ num :: Parser Sexp
 num = (Num . Prelude.read) <$> lexeme(many1 digit)
 
 symbol :: Parser Sexp
-symbol = Symbol <$> whole
-  where
-    whole = lexeme ((:) <$> firstChar <*> many rest)
-    firstChar = letter <|> char '_'
-    rest = digit <|> firstChar
+symbol = Symbol <$> lexeme (many1 $ noneOf " ()")
 
+list :: Parser Sexp
+list = List <$> (lexeme (char '(')
+                 *> many sexp
+                 <* lexeme (char ')'))
