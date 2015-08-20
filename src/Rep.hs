@@ -3,13 +3,13 @@ module Rep
 , Rep.eval
 , Rep.print
 ) where
-import Read
+import Parser
 import Text.Parsec
 
 rep :: String -> String
-rep = Rep.print . Read.read
+rep = Rep.print . Rep.eval . Parser.read
 
-eval :: Sexp -> Sexp
+eval :: Either ParseError Sexp -> Either ParseError Sexp
 eval x = x
 
 print :: Either ParseError Sexp -> String
