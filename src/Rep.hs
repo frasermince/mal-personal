@@ -5,6 +5,7 @@ module Rep
 ) where
 import Parser
 import Text.Parsec
+import Types (Sexp(..))
 
 rep :: String -> String
 rep = Rep.print . Rep.eval . Parser.read
