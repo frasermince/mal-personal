@@ -6,7 +6,7 @@ import Data.Either
 import Types (Sexp(..))
 
 spec :: Spec
-spec = 
+spec =
   describe "Parser" $
     describe "read" $ do
       it "parses a number" $

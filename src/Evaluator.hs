@@ -1,9 +1,8 @@
 module Evaluator
-() where
+(evaluate) where
 
 import qualified Data.Map as Map
 import Types               (Sexp(..))
-import Control.Applicative (liftA2)
 
 
 add :: Sexp -> Sexp -> Sexp
@@ -23,7 +22,7 @@ replEnv = [Map.fromList [("+", add), ("-", Evaluator.subtract), ("*", multiply),
 
 type RunTimeError = String
 
-evaluate :: Sexp -> Either RunTimeError Sexp
+evaluate :: Sexp -> Environment -> Either RunTimeError Sexp
 evaluate = Right
 
 
