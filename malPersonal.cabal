@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Evaluator
+  exposed-modules:     Environment
+                     , Evaluator
                      , Parser
                      , Rep
                      , Types
