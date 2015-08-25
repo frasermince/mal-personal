@@ -7,7 +7,6 @@ module Types
 , RunTimeError(..)
 ) where
 import qualified Data.Map as Map
---             parms     body    bindings  environment
 type Params = [Sexp]
 type Bindings = [Sexp]
 type Body = Sexp
