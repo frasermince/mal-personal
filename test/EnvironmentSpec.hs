@@ -8,6 +8,11 @@ import qualified Data.Map as Map
 spec :: Spec
 spec =
   describe "Environment" $ do
+    describe "replEnv" $
+      it "finds the + and applies it" $
+        let possibleCommand = get "+" replEnv
+            command = fromMaybe (\bindings env -> MalNum 0) possibleCommand
+        in  command [MalNum 1, MalNum 2] replEnv `shouldBe` MalNum 3
     describe "get" $ do
       it "finds in a flat environment for a symbol" $
         let command x y = MalNum 3
