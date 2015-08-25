@@ -10,9 +10,15 @@ spec =
   describe "Environment" $
     describe "get" $ do
       it "searches a flat environment for a symbol" $
-        get "Symbol" Environment{outer = Nothing, current = Map.fromList [("Symbol", MalNum 3)]} `shouldBe` Just 3
+        let command x y = MalNum 3
+            currentMap = Map.fromList [("Symbol", command)]
+            getCommand = get "Symbol" Environment{outer = Nothing, current = currentMap}
+        in  isJust getCommand  `shouldBe` True
+
 
       it "search a nested environment for a symbol" $
-        isJust result `shouldBe` True
-        where result = get "+" Environment{outer = Just replEnv, current = currentMap}
-              currentMap = Map.fromList [("Symbol", MalNum 3)]
+        let command x y = MalNum 3
+            currentMap = Map.fromList [("Symbol", command)]
+            getCommand = get "+" Environment{outer = Just replEnv, current = currentMap}
+        in  isJust getCommand `shouldBe` True
+

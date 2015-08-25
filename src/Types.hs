@@ -2,7 +2,9 @@ module Types
 ( Sexp(..)
 , Environment(..)
 , Command(..)
+, AppliedCommand(..)
 , Bindings(..)
+, RunTimeError(..)
 ) where
 import qualified Data.Map as Map
 --             parms     body    bindings  environment
@@ -11,8 +13,9 @@ type Bindings = [Sexp]
 type Body = Sexp
 type RunTimeError = String
 
-data Environment = Environment { outer :: Maybe Environment, current :: Map.Map String Command }
-type Command = Params -> Body -> Bindings -> Environment -> Sexp
+data Environment = Environment { outer :: Maybe Environment, current :: Map.Map String AppliedCommand }
+type AppliedCommand = Bindings -> Environment -> Sexp
+type Command = Params -> Body -> AppliedCommand
 
 data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalError String
             deriving (Eq)
