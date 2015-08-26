@@ -1,10 +1,10 @@
 module Evaluator
 (evaluate) where
 
-import Types               (Sexp(..), Environment(..), RunTimeError(..))
+import Types               (Sexp(..), Environment(..), RunTimeError(..), Eval(..))
 
 
-evaluate :: Sexp -> Environment -> Either RunTimeError Sexp
-evaluate command env = Right command
+evaluate :: Sexp -> Environment -> Eval
+evaluate command env = return command
 
 

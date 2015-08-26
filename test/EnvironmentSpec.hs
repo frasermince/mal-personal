@@ -1,6 +1,6 @@
 module EnvironmentSpec (spec) where
 import Test.Hspec
-import Types (Sexp(..), Environment(..))
+import Types (Sexp(..), Environment(..), runEval)
 import Environment
 import Data.Maybe
 import qualified Data.Map as Map
@@ -11,34 +11,36 @@ spec =
     describe "replEnv" $
       it "finds the + and applies it" $
         let possibleCommand = get "+" replEnv
-            command = fromMaybe (\bindings env -> MalNum 0) possibleCommand
-        in  command [MalNum 1, MalNum 2] replEnv `shouldBe` MalNum 3
+            command = fromMaybe (\bindings env -> return $ MalNum 0) possibleCommand
+            eval = command [MalNum 1, MalNum 2] replEnv
+        in  runEval eval `shouldBe` (Right $ MalNum 3)
     describe "get" $ do
       it "finds in a flat environment for a symbol" $
-        let command x y = MalNum 3
+        let command x y = return $ MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            getCommand = get "Symbol" Environment{outer = Nothing, current = currentMap}
+            getCommand = get "Symbol" Environment{getEnvironment = [currentMap]}
         in  isJust getCommand  `shouldBe` True
 
 
       it "finds in a nested environment for a symbol" $
-        let command x y = MalNum 3
+        let command x y = return $ MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            getCommand = get "+" Environment{outer = Just replEnv, current = currentMap}
+            base = head $ getEnvironment replEnv
+            getCommand = get "+" Environment{getEnvironment = [currentMap, base]}
         in  isJust getCommand `shouldBe` True
 
       it "cannot find if not in the set" $
-        let command x y = MalNum 3
+        let command x y = return $ MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            environment = Environment{outer = Nothing, current = currentMap}
+            environment = Environment{getEnvironment = [currentMap]}
             getCommand = get "Test" environment
         in  isNothing getCommand `shouldBe` True
 
     describe "set" $
       it "sets the command in the current environment" $
-        let command x y = MalNum 3
+        let command x y = return $ MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            originalEnvironment = Environment{outer = Nothing, current = currentMap}
+            originalEnvironment = Environment{getEnvironment = [currentMap]}
             newEnvironment = set "Test" command originalEnvironment
             getCommand = get "Test" newEnvironment
         in  isJust getCommand `shouldBe` True
