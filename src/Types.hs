@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Types
 ( Sexp(..)
 , Environment(..)
@@ -25,7 +27,7 @@ runEval eval = runIdentity $ runExceptT result
 type AppliedCommand = Bindings -> Environment -> Eval
 type Command = Params -> Body -> AppliedCommand
 
-data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalError String
+data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalError String | MalFunction AppliedCommand
             deriving (Eq)
 
 instance Show Sexp where
@@ -46,3 +48,6 @@ instance Monoid Environment where
           mergeLists [] y = y
           mergeLists (x:xs) (y:ys) = (x `Map.union` y) : mergeLists xs ys
 
+instance Eq AppliedCommand where
+  commandOne == commandTwo = runEval (commandOne bindings mempty ) == runEval (commandTwo bindings mempty)
+    where bindings = [MalNum 1, MalNum 2]
