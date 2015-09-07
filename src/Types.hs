@@ -8,27 +8,31 @@ module Types
 , Bindings(..)
 , RunTimeError(..)
 , Eval(..)
+, MalError(..)
 , runEval
 ) where
 import qualified Data.Map as Map
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 import Control.Monad.Identity
+import Text.Parsec
 type Params = [Sexp]
 type Bindings = [Sexp]
 type Body = Sexp
 type RunTimeError = String
 
 data Environment = Environment {getEnvironment :: [Map.Map String AppliedCommand]}
-type Eval = WriterT Environment (ExceptT String Identity) Sexp
-runEval :: Eval -> Either String Sexp
+type Eval = WriterT Environment (ExceptT MalError Identity) Sexp
+runEval :: Eval -> Either MalError Sexp
 runEval eval = runIdentity $ runExceptT result
   where result = fst <$> runWriterT eval
 type AppliedCommand = Bindings -> Environment -> Eval
 type Command = Params -> Body -> AppliedCommand
 
-data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalError String | MalFunction AppliedCommand
+data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalFunction AppliedCommand
             deriving (Eq)
+
+data MalError = MalParseError ParseError | MalEvalError String
 
 instance Show Sexp where
   show (MalNum x) = show x
@@ -48,6 +52,17 @@ instance Monoid Environment where
           mergeLists [] y = y
           mergeLists (x:xs) (y:ys) = (x `Map.union` y) : mergeLists xs ys
 
+instance Eq MalError where
+  MalParseError one == MalParseError two = one == two
+  MalEvalError one == MalEvalError two = one == two
+
+instance Show MalError where
+  show (MalParseError error) = show error
+  show (MalEvalError error) = show error
+
 instance Eq AppliedCommand where
   commandOne == commandTwo = runEval (commandOne bindings mempty ) == runEval (commandTwo bindings mempty)
     where bindings = [MalNum 1, MalNum 2]
+
+instance Show Eval where
+  show eval = show $ runEval eval

@@ -6,10 +6,10 @@ import Text.Parsec.Char
 import Text.Parsec.String
 import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
 import Control.Monad       (void, ap, (>>))
-import Types               (Sexp(..))
+import Types               (Sexp(..), MalError(..))
 
-read :: String -> Either ParseError Sexp
-read = parseWithWhitespace sexp
+read :: String -> Either MalError Sexp
+read command = either (Left . MalParseError) (Right) (parseWithWhitespace sexp command)
 
 parseWithWhitespace :: Parser a -> String -> Either ParseError a
 parseWithWhitespace p = parseWithEof (whitespace >> p)

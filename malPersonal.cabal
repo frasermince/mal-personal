@@ -41,6 +41,9 @@ test-suite mapPersonal-test
   hs-source-dirs:      test
   main-is:             Main.hs
   other-modules:       Spec
+                     , EnvironmentSpec
+                     , EvaluatorSpec
+                     , ParserSpec
   build-depends:       base
                      , containers
                      , malPersonal

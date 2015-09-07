@@ -1,17 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Rep
 ( Rep.rep
-, Rep.eval
-, Rep.print
+--, Rep.print
 ) where
 import Parser
 import Text.Parsec
-import Types (Sexp(..))
+import Types (Sexp(..), Environment(..), Eval(..), runEval, MalError(..))
+import Evaluator
+import Data.String
 
-rep :: String -> String
-rep = Rep.print . Rep.eval . Parser.read
+rep :: Environment -> String -> Either MalError Sexp
+rep env command = do sexp <- Parser.read command
+                     runEval $ evaluate (sexp, env)
 
-eval :: Either ParseError Sexp -> Either ParseError Sexp
-eval x = x
-
-print :: Either ParseError Sexp -> String
-print = either show show
+--print :: Eval -> String
+--print = (either show show) . runEval
