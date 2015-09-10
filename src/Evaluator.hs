@@ -1,13 +1,16 @@
 module Evaluator
 (evaluate) where
 
-import Types               (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..))
-import Environment         (get)
+import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..))
+import qualified Environment as Env (get, set)
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
 
 evaluate :: (Sexp, Environment) -> Eval
+evaluate (MalList (MalSymbol "def!" : MalSymbol key : value : []), env) = do solvedValue <- evalAst (value, env)
+                                                                             tell $ Env.set key solvedValue env
+                                                                             return solvedValue
 evaluate (command, env) = do tell env
                              result <- evalAst (command, env)
                              case result of
@@ -16,9 +19,9 @@ evaluate (command, env) = do tell env
 
 evalAst :: (Sexp, Environment) -> Eval
 evalAst (MalSymbol symbol, env) = do tell env
-                                     case get symbol env of
+                                     case Env.get symbol env of
                                           Nothing -> throwError (MalEvalError $ "unbound variable " ++ symbol)
-                                          Just val -> return $ MalFunction val
+                                          Just val -> return $ val
 
 evalAst (MalList list, env) = foldr f (return $ MalList []) list
                               where f sexp accum =  do resultingSexp <- eval sexp

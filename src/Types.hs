@@ -10,6 +10,7 @@ module Types
 , Eval(..)
 , MalError(..)
 , runEval
+, runEvalForTuple
 ) where
 import qualified Data.Map as Map
 import Control.Monad.Writer.Lazy
@@ -21,11 +22,15 @@ type Bindings = [Sexp]
 type Body = Sexp
 type RunTimeError = String
 
-data Environment = Environment {getEnvironment :: [Map.Map String AppliedCommand]}
+data Environment = Environment {getEnvironment :: [Map.Map String Sexp]}
 type Eval = WriterT Environment (ExceptT MalError Identity) Sexp
 runEval :: Eval -> Either MalError Sexp
 runEval eval = runIdentity $ runExceptT result
   where result = fst <$> runWriterT eval
+
+runEvalForTuple :: Eval -> Either MalError (Sexp, Environment)
+runEvalForTuple eval = runIdentity $ runExceptT $ runWriterT eval
+
 type AppliedCommand = Bindings -> Environment -> Eval
 type Command = Params -> Body -> AppliedCommand
 
@@ -37,10 +42,14 @@ data MalError = MalParseError ParseError | MalEvalError String
 instance Show Sexp where
   show (MalNum x) = show x
   show (MalSymbol x) = x
+  show (MalFunction appliedCommand) = "<FN>"
   show (MalList sexps) = "(" ++ foldl convertToString "" sexps ++ ")"
     where
       convertToString "" sexp = show sexp
       convertToString accumulator sexp = accumulator ++ " " ++ show sexp
+
+instance Show Environment where
+  show env = show $ getEnvironment env
 
 instance Monoid Environment where
   mempty = Environment {getEnvironment = []}

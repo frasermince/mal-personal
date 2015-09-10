@@ -8,14 +8,14 @@ import Data.Maybe
 import qualified Data.Map as Map
 import Control.Monad.Except
 
-set :: String -> AppliedCommand -> Environment -> Environment
+set :: String -> Sexp -> Environment -> Environment
 set k v env = Environment {getEnvironment = setInArray k v envList}
   where envList = getEnvironment env
         setInArray k v [] = [Map.fromList[(k, v)]]
         setInArray k v (env:envs) = newEnv:envs
           where newEnv = Map.insert k v env
 
-get :: String -> Environment -> Maybe AppliedCommand
+get :: String -> Environment -> Maybe Sexp
 get k environment = getFromArray k envList
   where envList = getEnvironment environment
         getFromArray k [] = Nothing
@@ -27,7 +27,12 @@ get k environment = getFromArray k envList
 applyAction :: (Integer -> Integer -> Integer) -> AppliedCommand
 applyAction f [MalNum x, MalNum y] _ = return $ MalNum $ f x y
 applyAction f list _ = do throwError (MalEvalError $ "Wrong number of parameters. Expected 2 parameters but got " ++ (show $ length list))
+
+makeMalFunction :: (Integer -> Integer -> Integer) -> Sexp
+makeMalFunction f = MalFunction $ applyAction f
+
+
 replEnv :: Environment
 replEnv = Environment{getEnvironment = [operationMap]}
-  where operationMap = Map.fromList [("+", applyAction (+)), ("-", applyAction (-)), ("*", applyAction (*)), ("/", applyAction div)]
+  where operationMap = Map.fromList [("+", makeMalFunction (+)), ("-", makeMalFunction (-)), ("*", makeMalFunction (*)), ("/", makeMalFunction div)]
 
