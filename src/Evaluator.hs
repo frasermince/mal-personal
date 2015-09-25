@@ -7,13 +7,12 @@ import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
 evaluate :: (Sexp, Environment) -> Eval
-evaluate (MalList (MalSymbol "let*" : MalList params : expression : []), env) = finalResult newEnv
+evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = finalResult newEnv
   where newEnv = runEvalForTuple $ findNewEnv params
         finalResult env = case env of
                     (Right (_, e))    -> censor Env.removeLayer $ evaluate (expression, e)
                     (Left error) -> throwError error
         findNewEnv :: [Sexp] -> Eval
-        --need to make add and remove layer commands for env
         findNewEnv [] = censor (\x -> Env.addLayer env) (return $ MalList [])
 
         findNewEnv (_:[]) = do throwError $ MalEvalError "let* param bindings do not match"
@@ -24,9 +23,9 @@ evaluate (MalList (MalSymbol "let*" : MalList params : expression : []), env) = 
                                 evalAst (val, currentEnv)
         --findNewEnv _ = do throwError $ MalEvalError "Wrong number of params to let binding"
 
-evaluate (MalList (MalSymbol "def!" : MalSymbol key : value : []), env) = do solvedValue <- evalAst (value, env)
-                                                                             tell $ Env.set key solvedValue env
-                                                                             return solvedValue
+evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env) = do solvedValue <- evalAst (value, env)
+                                                                            tell $ Env.set key solvedValue env
+                                                                            return solvedValue
 evaluate (command, env) = do tell env
                              result <- evalAst (command, env)
                              case result of
