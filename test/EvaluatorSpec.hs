@@ -42,3 +42,7 @@ spec =
                Right (s, e) -> e
              secondEval = Evaluator.evaluate (MalSymbol "x", newEnv)
          in  isLeft (runEval secondEval) `shouldBe` True
+
+      it "Fails if an odd number of list elements are present in the let" $
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x"], MalSymbol "x"], replEnv)
+         in  isLeft (runEval evaluation) `shouldBe` True
