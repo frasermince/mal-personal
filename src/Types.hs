@@ -73,5 +73,5 @@ instance Eq AppliedCommand where
   commandOne == commandTwo = runEval (commandOne bindings mempty ) == runEval (commandTwo bindings mempty)
     where bindings = [MalNum 1, MalNum 2]
 
-instance Show Eval where
-  show eval = show $ runEval eval
+--instance Show Eval where
+  --show eval = show $ runEval eval

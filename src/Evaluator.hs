@@ -2,17 +2,19 @@ module Evaluator
 (evaluate) where
 
 import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..), runEvalForTuple)
-import qualified Environment as Env (get, set)
+import qualified Environment as Env (get, set, addLayer, removeLayer)
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
-
 evaluate :: (Sexp, Environment) -> Eval
-evaluate (MalList (MalSymbol "let*" : MalList params : expression : []), env) = do (_, newEnv) <- listen $ findNewEnv params
-                                                                                   evaluate (expression, newEnv)
-  where findNewEnv :: [Sexp] -> Eval
+evaluate (MalList (MalSymbol "let*" : MalList params : expression : []), env) = finalResult newEnv
+  where newEnv = runEvalForTuple $ findNewEnv params
+        finalResult env = case env of
+                    (Right (_, e))    -> censor Env.removeLayer $ evaluate (expression, e)
+                    (Left error) -> throwError error
+        findNewEnv :: [Sexp] -> Eval
         --need to make add and remove layer commands for env
-        findNewEnv [] = censor (\x -> env) (return $ MalList [])
+        findNewEnv [] = censor (\x -> Env.addLayer env) (return $ MalList [])
 
         findNewEnv (_:[]) = do throwError $ MalEvalError "let* param bindings do not match"
         findNewEnv (MalSymbol key : val : params) = do unwrappedVal <- solvedVal
