@@ -46,3 +46,13 @@ spec =
       it "Fails if an odd number of list elements are present in the let" $
          let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x"], MalSymbol "x"], replEnv)
          in  isLeft (runEval evaluation) `shouldBe` True
+
+      it "returns last expression from do expressions" $
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], replEnv)
+         in  runEval evaluation `shouldBe` Right (MalNum 2)
+
+      it "executes every value from a do expression" $
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], replEnv)
+             sideEffect = do (_, env) <- listen evaluation
+                             Evaluator.evaluate (MalSymbol "x", env)
+         in  runEval sideEffect `shouldBe` Right (MalNum 3)
