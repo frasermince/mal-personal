@@ -56,3 +56,11 @@ spec =
              sideEffect = do (_, env) <- listen evaluation
                              Evaluator.evaluate (MalSymbol "x", env)
          in  runEval sideEffect `shouldBe` Right (MalNum 3)
+
+      it "evaluates if statements true case" $
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool "true", MalNum 3, MalNum 2], replEnv)
+         in  runEval evaluation `shouldBe` Right (MalNum 3)
+
+      it "evaluates if statements false case" $
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool "false", MalNum 3, MalNum 2], replEnv)
+         in  runEval evaluation `shouldBe` Right (MalNum 2)

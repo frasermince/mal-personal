@@ -21,13 +21,16 @@ sexp :: Parser Sexp
 sexp = list <|> atom
 
 atom :: Parser Sexp
-atom = num <|> symbol
+atom = num <|> bool <|> symbol
 
 whitespace :: Parser ()
 whitespace = void $ many $ oneOf " \n\t"
 
 lexeme :: Parser a -> Parser a
 lexeme p = p <* whitespace
+
+bool :: Parser Sexp
+bool = (MalBool . Prelude.read) <$> (lexeme $ (string "true") <|> (string "false"))
 
 num :: Parser Sexp
 num = (MalNum . Prelude.read) <$> lexeme(many1 digit)

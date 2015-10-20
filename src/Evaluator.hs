@@ -7,6 +7,12 @@ import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
 evaluate :: (Sexp, Environment) -> Eval
+
+evaluate (MalList (MalSymbol "if" : condition : positive : negative : []), env) = do (sexp, newEnv) <- listen $ evaluate (condition, env)
+                                                                                     case sexp of
+                                                                                      MalBool "true" -> evaluate (positive, newEnv)
+                                                                                      MalBool "false" -> evaluate (negative, newEnv)
+
 evaluate (MalList (MalSymbol "do" : params), env) = foldl foldEval initialValue params
 
   where initialValue :: Eval
