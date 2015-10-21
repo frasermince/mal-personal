@@ -37,12 +37,21 @@ spec =
             getCommand = get "Test" environment
         in  isNothing getCommand `shouldBe` True
 
-    describe "set" $
+    describe "set" $ do
       it "sets the command in the current environment" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
             originalEnvironment = Environment{getEnvironment = [currentMap]}
             newEnvironment = set "Test" command originalEnvironment
             getCommand = get "Test" newEnvironment
-        in  isJust getCommand `shouldBe` True
+        in  getCommand `shouldBe` (Just $ MalNum 3)
+
+      it "can override the previous value" $
+         let command = MalNum 3
+             currentMap = Map.fromList [("Symbol", command)]
+             originalEnvironment = Environment{getEnvironment = [currentMap]}
+             newEnvironment = set "Test" command originalEnvironment
+             finalEnvironment = set "Test" (MalNum 4) newEnvironment
+             getCommand = get "Test" finalEnvironment
+         in  getCommand `shouldBe` (Just $ MalNum 4)
 

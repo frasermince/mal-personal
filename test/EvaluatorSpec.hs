@@ -32,6 +32,15 @@ spec =
             secondEval = Evaluator.evaluate (MalSymbol "x", newEnv)
         in  runEval secondEval `shouldBe` Right (MalNum 3)
 
+      it "can override a def" $
+        let firstEval = Evaluator.evaluate (MalList [MalSymbol "def", MalSymbol "x", MalNum 3], replEnv)
+            newEnv = case (runEvalForTuple firstEval) of
+              Right (s, e) -> e
+              Left  error -> replEnv
+            secondEval = Evaluator.evaluate (MalList [MalSymbol "def", MalSymbol "x", MalNum 4], replEnv)
+        in  runEval secondEval `shouldBe` Right (MalNum 4)
+
+
       it "Can evalute a let expression" $
          let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3], MalSymbol "x"], replEnv)
          in  runEval evaluation `shouldBe` Right (MalNum 3)

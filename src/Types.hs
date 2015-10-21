@@ -60,7 +60,7 @@ instance Monoid Environment where
           yList = reverse $ getEnvironment y
           mergeLists x [] = x
           mergeLists [] y = y
-          mergeLists (x:xs) (y:ys) = (x `Map.union` y) : mergeLists xs ys
+          mergeLists (x:xs) (y:ys) = (y `Map.union` x) : mergeLists xs ys
 
 instance Eq MalError where
   MalParseError one == MalParseError two = one == two
