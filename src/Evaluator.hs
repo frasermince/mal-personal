@@ -12,6 +12,7 @@ evaluate (MalList (MalSymbol "if" : condition : positive : negative : []), env) 
                                                                                      case sexp of
                                                                                       MalBool "true" -> evaluate (positive, newEnv)
                                                                                       MalBool "false" -> evaluate (negative, newEnv)
+                                                                                      _ -> evaluate (positive, newEnv)
 
 evaluate (MalList (MalSymbol "do" : params), env) = foldl foldEval initialValue params
 
