@@ -2,6 +2,7 @@ module EnvironmentSpec (spec) where
 import Test.Hspec
 import Types (Sexp(..), Environment(..), runEval)
 import Environment
+import Core
 import Data.Maybe
 import qualified Data.Map as Map
 

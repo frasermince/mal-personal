@@ -4,7 +4,7 @@ import Control.Monad
 import System.IO
 import Rep
 import Types(runEvalForTuple, Environment(..))
-import Environment(replEnv)
+import Core(replEnv)
 import System.Console.Haskeline
 
 main :: IO ()

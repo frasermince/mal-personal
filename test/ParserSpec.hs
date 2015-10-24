@@ -2,6 +2,7 @@ module ParserSpec (spec) where
 import Parser
 import Test.Hspec
 import Control.Exception (evaluate)
+import Core
 import Data.Either
 import Types (Sexp(..))
 

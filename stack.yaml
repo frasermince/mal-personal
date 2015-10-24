@@ -1,5 +1,5 @@
 flags: {}
 packages:
 - '.'
-extra-deps: []
-resolver: lts-3.0
+extra-deps: [cabal-helper-0.6.1.0]
+resolver: lts-3.10

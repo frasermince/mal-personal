@@ -3,6 +3,7 @@ import Evaluator
 import Test.Hspec
 import Types (Sexp(..), Environment(..), runEval, runEvalForTuple)
 import Control.Monad.Writer.Lazy
+import Core
 import Environment
 import Data.Either
 

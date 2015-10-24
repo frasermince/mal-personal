@@ -1,7 +1,6 @@
 module Environment
 ( set
 , get
-, replEnv
 , addLayer
 , removeLayer
 ) where
@@ -33,16 +32,5 @@ get k environment = getFromArray k envList
           | otherwise = getFromArray k envs
           where lookupValue = Map.lookup k env
 
-applyAction :: (Integer -> Integer -> Integer) -> AppliedCommand
-applyAction f [MalNum x, MalNum y] _ = return $ MalNum $ f x y
-applyAction f [_, _] _ = do throwError (MalEvalError $ "Parameters are of the wrong type")
-applyAction f list _ = do throwError (MalEvalError $ "Wrong number of parameters. Expected 2 parameters but got " ++ (show $ length list))
 
-makeMalFunction :: (Integer -> Integer -> Integer) -> Sexp
-makeMalFunction f = MalFunction $ applyAction f
-
-
-replEnv :: Environment
-replEnv = Environment{getEnvironment = [operationMap]}
-  where operationMap = Map.fromList [("+", makeMalFunction (+)), ("-", makeMalFunction (-)), ("*", makeMalFunction (*)), ("/", makeMalFunction div)]
 
