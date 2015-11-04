@@ -6,23 +6,6 @@ import qualified Environment as Env (get, set, addLayer, removeLayer)
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
-evaluate :: (Sexp, Environment) -> Eval
-
-evaluate (MalList (MalSymbol "if" : condition : positive : negative : []), env) = do (sexp, newEnv) <- listen $ evaluate (condition, env)
-                                                                                     case sexp of
-                                                                                      MalBool "true" -> evaluate (positive, newEnv)
-                                                                                      MalBool "false" -> evaluate (negative, newEnv)
-                                                                                      _ -> evaluate (positive, newEnv)
-
-evaluate (MalList (MalSymbol "do" : params), env) = foldl foldEval initialValue params
-
-  where initialValue :: Eval
-        initialValue = do tell env
-                          return $ MalList []
-        foldEval :: Eval -> Sexp -> Eval
-        foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
-                                       evaluate (sexp, resultingEnv)
-
 evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = finalResult newEnv
   where newEnv = runEvalForTuple $ findNewEnv params
         finalResult env = case env of

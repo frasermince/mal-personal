@@ -4,9 +4,11 @@ module Core
 , replEnv
 ) where
 import Types
+import Environment as Env
 import Evaluator
 import Control.Monad.Except
 import Control.Monad.Writer.Lazy
+import Debug.Trace
 import qualified Data.Map as Map
 
 applyAction :: (Integer -> Integer -> Integer) -> AppliedCommand
@@ -25,6 +27,21 @@ conditional (condition : positive : negative : []) env = do (sexp, newEnv) <- li
                                                               MalBool "false" -> evaluate (negative, newEnv)
                                                               _ -> evaluate (positive, newEnv)
 
+doExpression :: AppliedCommand
+doExpression params env = foldl foldEval initialValue params
+  where initialValue :: Eval
+        initialValue = do tell env
+                          return $ MalList []
+        foldEval :: Eval -> Sexp -> Eval
+        foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
+                                       evaluate (sexp, resultingEnv)
+
 replEnv :: Environment
 replEnv = Environment{getEnvironment = [operationMap]}
-  where operationMap = Map.fromList [("+", makeMalFunction (+)), ("-", makeMalFunction (-)), ("*", makeMalFunction (*)), ("/", makeMalFunction div)]
+  where operationMap = Map.fromList [ ("+", makeMalFunction (+))
+                                    , ("-", makeMalFunction (-))
+                                    , ("*", makeMalFunction (*))
+                                    , ("/", makeMalFunction div)
+                                    , ("if", MalFunction conditional)
+                                    , ("do", MalFunction doExpression)
+                                    ]
