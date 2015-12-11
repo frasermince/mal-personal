@@ -1,7 +1,7 @@
 module Evaluator
 (evaluate) where
 
-import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..), runEvalForTuple)
+import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..), runEvalForTuple, Command(..))
 import qualified Environment as Env (get, set, addLayer, removeLayer)
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
@@ -25,6 +25,16 @@ evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = f
 evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env) = do solvedValue <- evaluate (value, env)
                                                                             tell $ Env.set key solvedValue env
                                                                             return solvedValue
+
+                                                                            --add case statements for error handling
+evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env) = return $ MalFunction $ createFunction params functionBody
+  where createFunction :: Command
+        createFunction params body bindings environment = evaluate (body, functionEnvironment params bindings environment)
+          where functionEnvironment params bindings environment = foldl setToEnv environment $ zip params bindings
+                  where setToEnv currentEnv (MalSymbol k, v) = Env.set k v currentEnv
+                        -- setToEnv currentEnv (k, v) = 
+
+
 evaluate (command, env) = do tell env
                              result <- evalAst (command, env)
                              case result of

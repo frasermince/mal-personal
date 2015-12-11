@@ -74,3 +74,12 @@ spec =
       it "evaluates if statements false case" $
          let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool "false", MalNum 3, MalNum 2], replEnv)
          in  runEval evaluation `shouldBe` Right (MalNum 2)
+
+      it "allows you to create function" $
+        let evaluation = Evaluator.evaluate (MalList [MalList [MalSymbol "fn", MalList [MalSymbol "x"], MalSymbol "x"], MalNum 3], replEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 3)
+
+      it "allows you to handle a nested function" $
+        let innerFunction = MalList [MalSymbol "fn", MalList [MalSymbol "x", MalSymbol "y"], MalList [MalSymbol "+", MalSymbol "x", MalSymbol "y"]]
+            evaluation = Evaluator.evaluate (MalList [MalList [MalSymbol "fn", MalList [MalSymbol "x"], MalList [innerFunction, MalSymbol "x", MalNum 4]], MalNum 3], replEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 7)
