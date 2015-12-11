@@ -39,6 +39,7 @@ evaluate (command, env) = do tell env
                              result <- evalAst (command, env)
                              case result of
                                   MalList (MalFunction f : list) -> f list env
+                                  MalList (f : list) -> throwError $ MalEvalError $ (show f) ++ " is not a function"
                                   _ -> return result
 
 evalAst :: (Sexp, Environment) -> Eval
