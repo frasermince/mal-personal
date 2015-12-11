@@ -36,6 +36,10 @@ doExpression params env = foldl foldEval initialValue params
         foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
                                        evaluate (sexp, resultingEnv)
 
+
+list :: AppliedCommand
+list params env = return $ MalList params
+
 replEnv :: Environment
 replEnv = Environment{getEnvironment = [operationMap]}
   where operationMap = Map.fromList [ ("+", makeMalFunction (+))
@@ -44,4 +48,5 @@ replEnv = Environment{getEnvironment = [operationMap]}
                                     , ("/", makeMalFunction div)
                                     , ("if", MalFunction conditional)
                                     , ("do", MalFunction doExpression)
+                                    , ("list", MalFunction list)
                                     ]

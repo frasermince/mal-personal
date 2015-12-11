@@ -83,3 +83,8 @@ spec =
         let innerFunction = MalList [MalSymbol "fn", MalList [MalSymbol "x", MalSymbol "y"], MalList [MalSymbol "+", MalSymbol "x", MalSymbol "y"]]
             evaluation = Evaluator.evaluate (MalList [MalList [MalSymbol "fn", MalList [MalSymbol "x"], MalList [innerFunction, MalSymbol "x", MalNum 4]], MalNum 3], replEnv)
         in  runEval evaluation `shouldBe` Right (MalNum 7)
+
+      it "has a function to create a list" $
+        let list = MalList [MalSymbol "list", MalNum 4, MalNum 5]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalList [MalNum 4, MalNum 5])
