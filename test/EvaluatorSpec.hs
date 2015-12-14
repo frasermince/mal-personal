@@ -88,3 +88,26 @@ spec =
         let list = MalList [MalSymbol "list", MalNum 4, MalNum 5]
             evaluation = Evaluator.evaluate (list, replEnv)
         in  runEval evaluation `shouldBe` Right (MalList [MalNum 4, MalNum 5])
+
+      it "can see if something is a list" $
+        let list = MalList[MalSymbol "list?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool "True")
+
+      it "can see if something is not a list" $
+        let list = MalList[MalSymbol "list?", MalNum 3]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool "False")
+
+
+      it "can see if a list is empty" $
+        let list = MalList[MalSymbol "empty?", MalList [MalSymbol "list"]]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool "True")
+
+
+      it "can see if a list is not empty" $
+        let list = MalList[MalSymbol "empty?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool "False")
+

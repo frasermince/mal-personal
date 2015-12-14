@@ -40,6 +40,15 @@ doExpression params env = foldl foldEval initialValue params
 list :: AppliedCommand
 list params env = return $ MalList params
 
+isList :: AppliedCommand
+isList ((MalList x) : _) env = return $ MalBool "True"
+isList (_ : _) env = return $ MalBool "False"
+
+isEmpty :: AppliedCommand
+isEmpty ((MalList []) : _) env = return $ MalBool "True"
+isEmpty ((MalList _) : _) env = return $ MalBool "False"
+isEmpty (list : _) env = throwError $ MalEvalError $ (show list) ++ " is not a list"
+
 replEnv :: Environment
 replEnv = Environment{getEnvironment = [operationMap]}
   where operationMap = Map.fromList [ ("+", makeMalFunction (+))
@@ -49,4 +58,6 @@ replEnv = Environment{getEnvironment = [operationMap]}
                                     , ("if", MalFunction conditional)
                                     , ("do", MalFunction doExpression)
                                     , ("list", MalFunction list)
+                                    , ("list?", MalFunction isList)
+                                    , ("empty?", MalFunction isEmpty)
                                     ]
