@@ -34,7 +34,7 @@ runEvalForTuple eval = runIdentity $ runExceptT $ runWriterT eval
 type AppliedCommand = Bindings -> Environment -> Eval
 type Command = Params -> Body -> AppliedCommand
 
-data Sexp = MalNum Integer | MalSymbol String | MalList [Sexp] | MalFunction AppliedCommand | MalBool String
+data Sexp = MalNum Int | MalSymbol String | MalList [Sexp] | MalFunction AppliedCommand | MalBool String
             deriving (Eq)
 
 data MalError = MalParseError ParseError | MalEvalError String

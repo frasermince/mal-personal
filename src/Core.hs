@@ -11,12 +11,12 @@ import Control.Monad.Writer.Lazy
 import Debug.Trace
 import qualified Data.Map as Map
 
-applyAction :: (Integer -> Integer -> Integer) -> AppliedCommand
+applyAction :: (Int -> Int -> Int) -> AppliedCommand
 applyAction f [MalNum x, MalNum y] _ = return $ MalNum $ f x y
 applyAction f [_, _] _ = do throwError (MalEvalError $ "Parameters are of the wrong type")
 applyAction f list _ = do throwError (MalEvalError $ "Wrong number of parameters. Expected 2 parameters but got " ++ (show $ length list))
 
-makeMalFunction :: (Integer -> Integer -> Integer) -> Sexp
+makeMalFunction :: (Int -> Int -> Int) -> Sexp
 makeMalFunction f = MalFunction $ applyAction f
 
 
@@ -49,6 +49,10 @@ isEmpty ((MalList []) : _) env = return $ MalBool "True"
 isEmpty ((MalList _) : _) env = return $ MalBool "False"
 isEmpty (list : _) env = throwError $ MalEvalError $ (show list) ++ " is not a list"
 
+count :: AppliedCommand
+count ((MalList list) : _) env = return $ MalNum $ length list
+count (list : _) env = throwError $ MalEvalError $ (show list) ++ " is not a list"
+
 replEnv :: Environment
 replEnv = Environment{getEnvironment = [operationMap]}
   where operationMap = Map.fromList [ ("+", makeMalFunction (+))
@@ -60,4 +64,5 @@ replEnv = Environment{getEnvironment = [operationMap]}
                                     , ("list", MalFunction list)
                                     , ("list?", MalFunction isList)
                                     , ("empty?", MalFunction isEmpty)
+                                    , ("count", MalFunction count)
                                     ]

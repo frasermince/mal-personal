@@ -111,3 +111,8 @@ spec =
             evaluation = Evaluator.evaluate (list, replEnv)
         in  runEval evaluation `shouldBe` Right (MalBool "False")
 
+      it "can count elements in a list" $
+        let list = MalList[MalSymbol "count", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+            evaluation = Evaluator.evaluate (list, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 2)
+
