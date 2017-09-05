@@ -6,6 +6,7 @@ import qualified Environment as Env (get, set, addLayer, removeLayer)
 import Control.Monad.Writer.Lazy
 import Control.Monad.Except
 
+evaluate :: (Sexp, Environment) -> Eval
 evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = finalResult newEnv
   where newEnv = runEvalForTuple $ findNewEnv params
         finalResult env = case env of
@@ -22,25 +23,28 @@ evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = f
                                 evaluate (val, currentEnv)
         --findNewEnv _ = do throwError $ MalEvalError "Wrong number of params to let binding"
 
-evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env) = do solvedValue <- evaluate (value, env)
-                                                                            tell $ Env.set key solvedValue env
-                                                                            return solvedValue
+evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env)
+  = do solvedValue <- evaluate (value, env)
+       tell $ Env.set key solvedValue env
+       return solvedValue
 
                                                                             --add case statements for error handling
-evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env) = return $ MalFunction $ createFunction params functionBody
+evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env)
+  = return $ MalFunction $ createFunction params functionBody
   where createFunction :: Command
         createFunction params body bindings environment = evaluate (body, functionEnvironment params bindings environment)
-          where functionEnvironment params bindings environment = foldl setToEnv environment $ zip params bindings
-                  where setToEnv currentEnv (MalSymbol k, v) = Env.set k v currentEnv
+        functionEnvironment params bindings environment = foldl setToEnv environment $ zip params bindings
+        setToEnv currentEnv (MalSymbol k, v) = Env.set k v currentEnv
                         -- setToEnv currentEnv (k, v) = 
 
 
-evaluate (command, env) = do tell env
-                             result <- evalAst (command, env)
-                             case result of
-                                  MalList (MalFunction f : list) -> f list env
-                                  MalList (f : list) -> throwError $ MalEvalError $ (show f) ++ " is not a function"
-                                  _ -> return result
+evaluate (command, env)
+  = do tell env
+       result <- evalAst (command, env)
+       case result of
+         MalList (MalFunction f : list) -> f list env
+         MalList (f : list) -> throwError $ MalEvalError $ (show f) ++ " is not a function"
+         _ -> return result
 
 evalAst :: (Sexp, Environment) -> Eval
 evalAst (MalSymbol symbol, env) = do tell env
