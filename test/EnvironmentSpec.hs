@@ -9,12 +9,12 @@ import qualified Data.Map as Map
 spec :: Spec
 spec =
   describe "Environment" $ do
-    describe "replEnv" $
+    describe "startingEnv" $
       it "finds the + and applies it" $
-        let possibleCommand = case (get "+" replEnv) of
+        let possibleCommand = case (get "+" startingEnv) of
                                (Just (MalFunction possibleCommand)) -> Just possibleCommand
             command = fromMaybe (\bindings env -> return $ MalNum 0) possibleCommand
-            eval = command [MalNum 1, MalNum 2] replEnv
+            eval = command [MalNum 1, MalNum 2] startingEnv
         in  runEval eval `shouldBe` (Right $ MalNum 3)
     describe "get" $ do
       it "finds in a flat environment for a symbol" $
@@ -27,7 +27,7 @@ spec =
       it "finds in a nested environment for a symbol" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            base = head replEnv
+            base = head startingEnv
             getCommand = get "+" [currentMap, base]
         in  isJust getCommand `shouldBe` True
 

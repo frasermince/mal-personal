@@ -1,6 +1,6 @@
 module Core
 ( makeMalFunction
-, replEnv
+, startingEnv
 ) where
 import Types
 import Environment as Env
@@ -73,8 +73,8 @@ equality (left : right : []) env = equals left right
         equals one two = throwError $ MalEvalError $ "cannot compare " ++ show one ++ " and " ++ show two
 
 
-replEnv :: Environment
-replEnv = [operationMap]
+startingEnv :: Environment
+startingEnv = [operationMap]
   where operationMap = Map.fromList [ ("+", makeMalFunction (+))
                                     , ("-", makeMalFunction (-))
                                     , ("*", makeMalFunction (*))

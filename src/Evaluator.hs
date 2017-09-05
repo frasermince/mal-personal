@@ -46,17 +46,19 @@ evaluate (command, env)
          MalList (f : list) -> throwError $ MalEvalError $ (show f) ++ " is not a function"
          _ -> return result
 
-evalAst :: (Sexp, Environment) -> Eval
-evalAst (MalSymbol symbol, env) = do tell env
-                                     case Env.get symbol env of
-                                          Nothing -> throwError (MalEvalError $ "unbound variable " ++ symbol)
-                                          Just val -> return $ val
+  where evalAst :: (Sexp, Environment) -> Eval
+        evalAst (MalSymbol symbol, env) =
+          do tell env
+             case Env.get symbol env of
+               Nothing -> throwError (MalEvalError $ "unbound variable " ++ symbol)
+               Just val -> return $ val
 
-evalAst (MalList list, env) =  foldr f (return $ MalList []) list
-                              where f sexp accum =  do resultingSexp <- eval sexp
-                                                       MalList accumulatedSexp <- accum
-                                                       return $ MalList $ resultingSexp : accumulatedSexp
-                                    eval sexp = do tell env
-                                                   evaluate (sexp, env)
-evalAst (sexp, env) = do tell env
-                         return sexp
+        evalAst (MalList list, env) =  foldr f (return $ MalList []) list
+          where f sexp accum =  do resultingSexp <- eval sexp
+                                   MalList accumulatedSexp <- accum
+                                   return $ MalList $ resultingSexp : accumulatedSexp
+                eval sexp = do tell env
+                               evaluate (sexp, env)
+
+        evalAst (sexp, env) = do tell env
+                                 return sexp

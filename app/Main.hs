@@ -4,11 +4,11 @@ import Control.Monad
 import System.IO
 import Rep                      (rep)
 import Types                    (runEvalForTuple, Environment(..))
-import Core                     (replEnv)
+import Core                     (startingEnv)
 import System.Console.Haskeline (runInputT, getInputLine, defaultSettings, InputT(..), outputStrLn)
 
 main :: IO ()
-main = runInputT defaultSettings $ loop replEnv
+main = runInputT defaultSettings $ loop startingEnv
    where
        loop :: Environment -> InputT IO ()
        loop env = do
