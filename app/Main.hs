@@ -2,10 +2,10 @@ module Main where
 
 import Control.Monad
 import System.IO
-import Rep
-import Types(runEvalForTuple, Environment(..))
-import Core(replEnv)
-import System.Console.Haskeline
+import Rep                      (rep)
+import Types                    (runEvalForTuple, Environment(..))
+import Core                     (replEnv)
+import System.Console.Haskeline (runInputT, getInputLine, defaultSettings, InputT(..), outputStrLn)
 
 main :: IO ()
 main = runInputT defaultSettings $ loop replEnv
