@@ -30,7 +30,7 @@ lexeme :: Parser a -> Parser a
 lexeme p = p <* whitespace
 
 bool :: Parser Sexp
-bool = MalBool <$> (lexeme $ (string "true") <|> (try $ string "false"))
+bool = MalBool <$> (==) "true" <$> (lexeme $ (string "true") <|> (try $ string "false"))
 
 num :: Parser Sexp
 num = (MalNum . Prelude.read) <$> lexeme(many1 digit)

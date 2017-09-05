@@ -68,11 +68,11 @@ spec =
          in  runEval sideEffect `shouldBe` Right (MalNum 3)
 
       it "evaluates if statements true case" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool "true", MalNum 3, MalNum 2], replEnv)
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool True, MalNum 3, MalNum 2], replEnv)
          in  runEval evaluation `shouldBe` Right (MalNum 3)
 
       it "evaluates if statements false case" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool "false", MalNum 3, MalNum 2], replEnv)
+         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool False, MalNum 3, MalNum 2], replEnv)
          in  runEval evaluation `shouldBe` Right (MalNum 2)
 
       it "allows you to create function" $
@@ -90,29 +90,54 @@ spec =
         in  runEval evaluation `shouldBe` Right (MalList [MalNum 4, MalNum 5])
 
       it "can see if something is a list" $
-        let list = MalList[MalSymbol "list?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+        let list = MalList [MalSymbol "list?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
             evaluation = Evaluator.evaluate (list, replEnv)
-        in  runEval evaluation `shouldBe` Right (MalBool "True")
+        in  runEval evaluation `shouldBe` Right (MalBool True)
 
       it "can see if something is not a list" $
-        let list = MalList[MalSymbol "list?", MalNum 3]
+        let list = MalList [MalSymbol "list?", MalNum 3]
             evaluation = Evaluator.evaluate (list, replEnv)
-        in  runEval evaluation `shouldBe` Right (MalBool "False")
+        in  runEval evaluation `shouldBe` Right (MalBool False)
 
 
       it "can see if a list is empty" $
-        let list = MalList[MalSymbol "empty?", MalList [MalSymbol "list"]]
+        let list = MalList [MalSymbol "empty?", MalList [MalSymbol "list"]]
             evaluation = Evaluator.evaluate (list, replEnv)
-        in  runEval evaluation `shouldBe` Right (MalBool "True")
+        in  runEval evaluation `shouldBe` Right (MalBool True)
 
 
       it "can see if a list is not empty" $
-        let list = MalList[MalSymbol "empty?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+        let list = MalList [MalSymbol "empty?", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
             evaluation = Evaluator.evaluate (list, replEnv)
-        in  runEval evaluation `shouldBe` Right (MalBool "False")
+        in  runEval evaluation `shouldBe` Right (MalBool False)
 
       it "can count elements in a list" $
-        let list = MalList[MalSymbol "count", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
+        let list = MalList [MalSymbol "count", MalList [MalSymbol "list", MalNum 4, MalNum 5]]
             evaluation = Evaluator.evaluate (list, replEnv)
         in  runEval evaluation `shouldBe` Right (MalNum 2)
 
+      it "can check for equality" $
+        let expression =  MalList [MalSymbol "=", MalNum 3, MalNum 3]
+            evaluation = Evaluator.evaluate (expression, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool True)
+
+      it "can check for inequality" $
+        let expression = MalList [MalSymbol "=", MalNum 3, MalNum 4]
+            evaluation = Evaluator.evaluate (expression, replEnv)
+        in  runEval evaluation `shouldBe` Right (MalBool False)
+
+      it "Can compare with greater than" $
+        let evaluation = Evaluator.evaluate ((MalList [MalSymbol ">", MalNum 2, MalNum 1]), replEnv)
+        in runEval evaluation `shouldBe` Right (MalBool True)
+
+      it "Can compare with less than" $
+        let evaluation = Evaluator.evaluate ((MalList [MalSymbol "<", MalNum 2, MalNum 1]), replEnv)
+        in runEval evaluation `shouldBe` Right (MalBool False)
+
+      it "Can compare with less than or equal to" $
+        let evaluation = Evaluator.evaluate ((MalList [MalSymbol "<=", MalNum 2, MalNum 2]), replEnv)
+        in runEval evaluation `shouldBe` Right (MalBool True)
+
+      it "Can compare with greater than or equal to" $
+        let evaluation = Evaluator.evaluate ((MalList [MalSymbol ">=", MalNum 2, MalNum 1]), replEnv)
+        in runEval evaluation `shouldBe` Right (MalBool True)
