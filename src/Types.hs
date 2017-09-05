@@ -22,7 +22,7 @@ type Bindings = [Sexp]
 type Body = Sexp
 type RunTimeError = String
 
-data Environment = Environment {getEnvironment :: [Map.Map String Sexp]}
+type Environment = [Map.Map String Sexp]
 type Eval = WriterT Environment (ExceptT MalError Identity) Sexp
 runEval :: Eval -> Either MalError Sexp
 runEval eval = runIdentity $ runExceptT result
@@ -49,15 +49,11 @@ instance Show Sexp where
       convertToString "" sexp = show sexp
       convertToString accumulator sexp = accumulator ++ " " ++ show sexp
 
-instance Show Environment where
-  show env = show $ getEnvironment env
-
-instance Monoid Environment where
-  mempty = Environment {getEnvironment = []}
-  mappend x y = Environment {getEnvironment = resultList}
-    where resultList = reverse $ mergeLists xList yList
-          xList = reverse $ getEnvironment x
-          yList = reverse $ getEnvironment y
+instance {-# OVERLAPS #-} Monoid Environment where
+  mempty = []
+  mappend x y = reverse $ mergeLists xList yList
+    where xList = reverse x
+          yList = reverse y
           mergeLists x [] = x
           mergeLists [] y = y
           mergeLists (x:xs) (y:ys) = (y `Map.union` x) : mergeLists xs ys

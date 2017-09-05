@@ -54,7 +54,7 @@ count ((MalList list) : _) env = return $ MalNum $ length list
 count (list : _) env = throwError $ MalEvalError $ (show list) ++ " is not a list"
 
 replEnv :: Environment
-replEnv = Environment{getEnvironment = [operationMap]}
+replEnv = [operationMap]
   where operationMap = Map.fromList [ ("+", makeMalFunction (+))
                                     , ("-", makeMalFunction (-))
                                     , ("*", makeMalFunction (*))

@@ -20,21 +20,21 @@ spec =
       it "finds in a flat environment for a symbol" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            getCommand = get "Symbol" Environment{getEnvironment = [currentMap]}
+            getCommand = get "Symbol" [currentMap]
         in  isJust getCommand  `shouldBe` True
 
 
       it "finds in a nested environment for a symbol" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            base = head $ getEnvironment replEnv
-            getCommand = get "+" Environment{getEnvironment = [currentMap, base]}
+            base = head replEnv
+            getCommand = get "+" [currentMap, base]
         in  isJust getCommand `shouldBe` True
 
       it "cannot find if not in the set" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            environment = Environment{getEnvironment = [currentMap]}
+            environment = [currentMap]
             getCommand = get "Test" environment
         in  isNothing getCommand `shouldBe` True
 
@@ -42,7 +42,7 @@ spec =
       it "sets the command in the current environment" $
         let command = MalNum 3
             currentMap = Map.fromList [("Symbol", command)]
-            originalEnvironment = Environment{getEnvironment = [currentMap]}
+            originalEnvironment = [currentMap]
             newEnvironment = set "Test" command originalEnvironment
             getCommand = get "Test" newEnvironment
         in  getCommand `shouldBe` (Just $ MalNum 3)
@@ -50,7 +50,7 @@ spec =
       it "can override the previous value" $
          let command = MalNum 3
              currentMap = Map.fromList [("Symbol", command)]
-             originalEnvironment = Environment{getEnvironment = [currentMap]}
+             originalEnvironment = [currentMap]
              newEnvironment = set "Test" command originalEnvironment
              finalEnvironment = set "Test" (MalNum 4) newEnvironment
              getCommand = get "Test" finalEnvironment
