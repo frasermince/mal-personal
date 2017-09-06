@@ -54,11 +54,10 @@ evaluate (command, env)
                Just val -> return $ val
 
         evalAst (MalList list, env) =  foldr f (return $ MalList []) list
-          where f sexp accum =  do resultingSexp <- eval sexp
+          where f sexp accum =  do tell env
+                                   resultingSexp <- evaluate (sexp, env)
                                    MalList accumulatedSexp <- accum
                                    return $ MalList $ resultingSexp : accumulatedSexp
-                eval sexp = do tell env
-                               evaluate (sexp, env)
 
         evalAst (sexp, env) = do tell env
                                  return sexp
