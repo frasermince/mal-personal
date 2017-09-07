@@ -29,23 +29,6 @@ makeMalBooleanFunction :: (Int -> Int -> Bool) -> Sexp
 makeMalBooleanFunction f = MalFunction $ applyBooleanAction f
 
 
-conditional :: AppliedCommand
-conditional (condition : positive : negative : []) env = do (sexp, newEnv) <- listen $ evaluate (condition, env)
-                                                            case sexp of
-                                                              MalBool True -> evaluate (positive, newEnv)
-                                                              MalBool False -> evaluate (negative, newEnv)
-                                                              _ -> evaluate (positive, newEnv)
-
-doExpression :: AppliedCommand
-doExpression params env = foldl foldEval initialValue params
-  where initialValue :: Eval
-        initialValue = do tell env
-                          return $ MalList []
-        foldEval :: Eval -> Sexp -> Eval
-        foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
-                                       evaluate (sexp, resultingEnv)
-
-
 list :: AppliedCommand
 list params env = return $ MalList params
 
@@ -83,8 +66,6 @@ startingEnv = [operationMap]
                                     , ("<=", makeMalBooleanFunction (<=))
                                     , (">", makeMalBooleanFunction (>))
                                     , (">=", makeMalBooleanFunction (>=))
-                                    , ("if", MalFunction conditional)
-                                    , ("do", MalFunction doExpression)
                                     , ("list", MalFunction list)
                                     , ("list?", MalFunction isList)
                                     , ("empty?", MalFunction isEmpty)

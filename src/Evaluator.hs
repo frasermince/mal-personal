@@ -37,6 +37,21 @@ evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env)
         setToEnv currentEnv (MalSymbol k, v) = Env.set k v currentEnv
                         -- setToEnv currentEnv (k, v) = 
 
+evaluate (MalList (MalSymbol "do" : params), env) = foldl foldEval initialValue params
+  where initialValue :: Eval
+        initialValue = do tell env
+                          return $ MalList []
+        foldEval :: Eval -> Sexp -> Eval
+        foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
+                                       evaluate (sexp, resultingEnv)
+
+evaluate (MalList (MalSymbol "if" : condition : positive : negative : []), env) =
+  do (sexp, newEnv) <- listen $ evaluate (condition, env)
+     evaluate (chooseEvaluation sexp, newEnv)
+  where chooseEvaluation (MalBool True)  = positive
+        chooseEvaluation (MalBool False) = negative
+        chooseEvaluation _               = positive
+
 
 evaluate (command, env)
   = do tell env
