@@ -3,25 +3,26 @@ module Evaluator
 
 import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..), runEvalForTuple, Command(..))
 import qualified Environment as Env (get, set, addLayer, removeLayer)
-import Control.Monad.Writer.Lazy
+import Control.Monad.Writer.Lazy (censor, listen, tell)
 import Control.Monad.Except
 
 evaluate :: (Sexp, Environment) -> Eval
-evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = finalResult newEnv
-  where newEnv = runEvalForTuple $ findNewEnv params
-        finalResult env = case env of
-                    (Right (_, e))    -> censor Env.removeLayer $ evaluate (expression, e)
-                    (Left error) -> throwError error
-        findNewEnv :: [Sexp] -> Eval
-        findNewEnv [] = censor (\x -> Env.addLayer env) (return $ MalList [])
+evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = evaluateFinalExpression newEnv
+  where evaluateFinalExpression (Left error) =
+          throwError error
+        evaluateFinalExpression (Right (expression, environment)) =
+          censor Env.removeLayer $ evaluate (expression, environment)
 
-        findNewEnv (_:[]) = do throwError $ MalEvalError "let param bindings do not match"
-        findNewEnv (MalSymbol key : val : params) = do unwrappedVal <- solvedVal
-                                                       censor (Env.set key unwrappedVal) evalledCurrentEnv
-          where evalledCurrentEnv = findNewEnv params
-                solvedVal =  do (_, currentEnv) <- listen evalledCurrentEnv
-                                evaluate (val, currentEnv)
-        --findNewEnv _ = do throwError $ MalEvalError "Wrong number of params to let binding"
+        newEnv = runEvalForTuple $ bindLetVars params $ Env.addLayer env
+
+        bindLetVars :: [Sexp] -> Environment -> Eval
+        bindLetVars [] env = do tell env
+                                return expression
+        bindLetVars (_ : []) env = do throwError $ MalEvalError "let param bindings do not match"
+
+        bindLetVars (MalSymbol key : val : params) env =
+          do unwrappedValue <- evaluate (val, env)
+             bindLetVars params $ Env.set key unwrappedValue env
 
 evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env)
   = do solvedValue <- evaluate (value, env)

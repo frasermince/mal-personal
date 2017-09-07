@@ -57,6 +57,10 @@ spec =
         let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x"], MalSymbol "x"], startingEnv)
         in  isLeft (runEval evaluation) `shouldBe` True
 
+      it "Can use bindings between let expessions" $
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3, MalSymbol "y", MalList [MalSymbol "+", MalNum 1, MalSymbol "x"]], MalSymbol "y"], startingEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 4)
+
       it "returns last expression from do expressions" $
         let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], startingEnv)
         in  runEval evaluation `shouldBe` Right (MalNum 2)
