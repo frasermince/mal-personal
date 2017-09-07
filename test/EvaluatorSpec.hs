@@ -43,37 +43,37 @@ spec =
 
 
       it "Can evalute a let expression" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3], MalSymbol "x"], startingEnv)
-         in  runEval evaluation `shouldBe` Right (MalNum 3)
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3], MalSymbol "x"], startingEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 3)
 
       it "Removes let environment afterwards" $
-         let firstEval = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3], MalSymbol "x"], startingEnv)
-             newEnv = case (runEvalForTuple firstEval) of
-               Right (s, e) -> e
-             secondEval = Evaluator.evaluate (MalSymbol "x", newEnv)
-         in  isLeft (runEval secondEval) `shouldBe` True
+        let firstEval = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x", MalNum 3], MalSymbol "x"], startingEnv)
+            newEnv = case (runEvalForTuple firstEval) of
+                       Right (s, e) -> e
+            secondEval = Evaluator.evaluate (MalSymbol "x", newEnv)
+        in  isLeft (runEval secondEval) `shouldBe` True
 
       it "Fails if an odd number of list elements are present in the let" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x"], MalSymbol "x"], startingEnv)
-         in  isLeft (runEval evaluation) `shouldBe` True
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "let", MalList [MalSymbol "x"], MalSymbol "x"], startingEnv)
+        in  isLeft (runEval evaluation) `shouldBe` True
 
       it "returns last expression from do expressions" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], startingEnv)
-         in  runEval evaluation `shouldBe` Right (MalNum 2)
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], startingEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 2)
 
       it "executes every value from a do expression" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], startingEnv)
-             sideEffect = do (_, env) <- listen evaluation
-                             Evaluator.evaluate (MalSymbol "x", env)
-         in  runEval sideEffect `shouldBe` Right (MalNum 3)
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "do", MalList [MalSymbol "def", MalSymbol "x", MalNum 3], MalNum 2], startingEnv)
+            sideEffect = do (_, env) <- listen evaluation
+                            Evaluator.evaluate (MalSymbol "x", env)
+        in  runEval sideEffect `shouldBe` Right (MalNum 3)
 
       it "evaluates if statements true case" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool True, MalNum 3, MalNum 2], startingEnv)
-         in  runEval evaluation `shouldBe` Right (MalNum 3)
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool True, MalNum 3, MalNum 2], startingEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 3)
 
       it "evaluates if statements false case" $
-         let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool False, MalNum 3, MalNum 2], startingEnv)
-         in  runEval evaluation `shouldBe` Right (MalNum 2)
+        let evaluation = Evaluator.evaluate (MalList [MalSymbol "if", MalBool False, MalNum 3, MalNum 2], startingEnv)
+        in  runEval evaluation `shouldBe` Right (MalNum 2)
 
       it "allows you to create function" $
         let evaluation = Evaluator.evaluate (MalList [MalList [MalSymbol "fn", MalList [MalSymbol "x"], MalSymbol "x"], MalNum 3], startingEnv)
