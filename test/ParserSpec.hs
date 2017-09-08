@@ -38,4 +38,4 @@ spec =
         isLeft (readLang "\"Hello") `shouldBe` True
 
       it "parses a string with escaped quotes" $
-        readLang "\"Hi\"\"" `shouldBe` Right (MalString "Hi\"")
+        readLang "\"Hi\\\"\"" `shouldBe` Right (MalString "Hi\"")

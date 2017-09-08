@@ -2,8 +2,8 @@ module Parser
 ( readLang
 ) where
 import Text.Parsec
-import Text.Parsec.Char
-import Text.Parsec.String
+import Text.Parsec.Char    (char)
+import Text.Parsec.String  (Parser)
 import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
 import Control.Monad       (void, ap, (>>))
 import Types               (Sexp(..), MalError(..))
@@ -24,7 +24,16 @@ atom :: Parser Sexp
 atom = num <|> bool <|> malString <|> symbol
 
 malString :: Parser Sexp
-malString = MalString <$> (char '"' *> (many $ noneOf ['"']) <* lexeme (char '"'))
+malString = MalString <$> (char '"' *> stringChars <* lexeme (char '"'))
+
+stringChars = many $ escapedChars <|> noneOf "\\\""
+
+-- I took this function from the existing example. One of the only things I've copied in this project.
+escapedChars = do char '\\'
+                  x <- oneOf "\\\"n"
+                  case x of
+                    'n' -> return '\n'
+                    _   -> return x
 
 
 whitespace :: Parser ()
