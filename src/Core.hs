@@ -53,6 +53,7 @@ equality (left : right : []) env = equals left right
         equals (MalBool one) (MalBool two) = return $ MalBool $ one == two
         equals (MalList one) (MalList two) = return $ MalBool $ one == two
         equals (MalFunction one) (MalFunction two) = return $ MalBool False
+        equals (MalString one) (MalString two) = return $ MalBool $ one == two
         equals one two = throwError $ MalEvalError $ "cannot compare " ++ show one ++ " and " ++ show two
 
 

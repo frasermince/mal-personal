@@ -1,5 +1,5 @@
 module Parser
-( Parser.read
+( readLang
 ) where
 import Text.Parsec
 import Text.Parsec.Char
@@ -8,8 +8,8 @@ import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
 import Control.Monad       (void, ap, (>>))
 import Types               (Sexp(..), MalError(..))
 
-read :: String -> Either MalError Sexp
-read command = either (Left . MalParseError) (Right) (parseWithWhitespace sexp command)
+readLang :: String -> Either MalError Sexp
+readLang command = either (Left . MalParseError) (Right) (parseWithWhitespace sexp command)
 
 parseWithWhitespace :: Parser a -> String -> Either ParseError a
 parseWithWhitespace p = parseWithEof (whitespace >> p)
@@ -21,7 +21,11 @@ sexp :: Parser Sexp
 sexp = list <|> atom
 
 atom :: Parser Sexp
-atom = num <|> bool <|> symbol
+atom = num <|> bool <|> malString <|> symbol
+
+malString :: Parser Sexp
+malString = MalString <$> (char '"' *> (many $ noneOf ['"']) <* lexeme (char '"'))
+
 
 whitespace :: Parser ()
 whitespace = void $ many $ oneOf " \n\t"
