@@ -1,7 +1,7 @@
 module Parser
 ( readLang
 ) where
-import Text.Parsec
+import Text.Parsec         (many, parse, ParseError, eof, oneOf, noneOf, (<|>), many1, digit, string, try)
 import Text.Parsec.Char    (char)
 import Text.Parsec.String  (Parser)
 import Control.Applicative ((<$>), (<*>), (<*), (*>), (<$))
