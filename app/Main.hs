@@ -2,7 +2,7 @@ module Main where
 
 import Control.Monad
 import System.IO
-import Rep                      (rep)
+import ReadEval                 (readEval)
 import Types                    (runEvalForTuple, Environment(..))
 import Core                     (startingEnv)
 import System.Console.Haskeline (runInputT, getInputLine, defaultSettings, InputT(..), outputStrLn)
@@ -16,7 +16,7 @@ main = runInputT defaultSettings $ loop startingEnv
            case minput of
                Nothing -> return ()
                Just "quit" -> return ()
-               Just command -> case (rep env command) of
+               Just command -> case (readEval env command) of
                                  Right (s, e) -> do outputStrLn $ show s
                                                     loop e
                                  Left error -> do outputStrLn $ show error
