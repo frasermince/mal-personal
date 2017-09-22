@@ -31,7 +31,8 @@ evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env)
 
                                                                             --add case statements for error handling
 evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env)
-  = return $ MalFunction $ createFunction params functionBody
+  = do tell env
+       return $ MalFunction $ createFunction params functionBody
   where createFunction :: Command
         createFunction params body bindings environment = evaluate (body, functionEnvironment params bindings environment)
         functionEnvironment params bindings environment = foldl setToEnv environment $ zip params bindings
