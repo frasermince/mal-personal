@@ -9,19 +9,19 @@ import Data.Maybe
 import qualified Data.Map as Map
 import Control.Monad.Except
 
-addLayer :: Environment -> Environment
+addLayer :: Monad m => Environment m -> Environment m
 addLayer env =  Map.empty : env
 
-removeLayer :: Environment -> Environment
+removeLayer :: Monad m => Environment m -> Environment m
 removeLayer (env : envs) = envs
 
-set :: String -> Sexp -> Environment -> Environment
+set :: Monad m => String -> EnvironmentValue m -> Environment m -> Environment m
 set k v env = setInArray k v env
   where setInArray k v [] = [Map.fromList[(k, v)]]
         setInArray k v (env:envs) = newEnv:envs
           where newEnv = Map.insert k v env
 
-get :: String -> Environment -> Maybe Sexp
+get :: Monad m => String -> Environment m -> Maybe (EnvironmentValue m)
 get k environment = getFromArray k environment
   where getFromArray k [] = Nothing
         getFromArray k (env:envs)

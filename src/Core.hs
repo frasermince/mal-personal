@@ -5,6 +5,7 @@ module Core
 import Types
 import Environment as Env
 import Evaluator
+import Parser (readLang)
 import Control.Monad.Except
 import Control.Monad.Writer.Lazy (listen, tell)
 import Debug.Trace
@@ -45,6 +46,12 @@ count :: AppliedCommand
 count ((MalList list) : _) env = return $ MalNum $ length list
 count (list : _) env = throwError $ MalEvalError $ (show list) ++ " is not a list"
 
+
+readString :: AppliedCommand
+readString ((MalString string) : []) env = case readLang string of
+  Left error -> throwError error
+  Right sexp -> return sexp
+
 equality :: AppliedCommand
 equality (left : right : []) env = equals left right
   where equals :: Sexp -> Sexp -> Eval
@@ -67,6 +74,7 @@ startingEnv = [operationMap]
                                     , ("<=", makeMalBooleanFunction (<=))
                                     , (">", makeMalBooleanFunction (>))
                                     , (">=", makeMalBooleanFunction (>=))
+                                    , ("readString", MalFunction readString)
                                     , ("list", MalFunction list)
                                     , ("list?", MalFunction isList)
                                     , ("empty?", MalFunction isEmpty)

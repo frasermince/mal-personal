@@ -7,6 +7,13 @@ import Core
 import Environment
 import Data.Either
 
+runEval :: Eval -> Either MalError Sexp
+runEval eval = runIdentity $ runExceptT result
+  where result = fst <$> runWriterT eval
+
+runEvalForTuple :: Eval -> Either MalError (Sexp, Environment)
+runEvalForTuple eval = runIdentity $ runExceptT $ runWriterT eval
+
 spec :: Spec
 spec =
   describe "Evaluator" $
@@ -145,3 +152,16 @@ spec =
       it "Can compare with greater than or equal to" $
         let evaluation = Evaluator.evaluate ((MalList [MalSymbol ">=", MalNum 2, MalNum 1]), startingEnv)
         in runEval evaluation `shouldBe` Right (MalBool True)
+
+      it "Can read a arbitrary correctly formatted string" $
+        let expression = MalList [MalSymbol "readString", MalString "(+ 1 2)"]
+            evaluation = Evaluator.evaluate (expression, startingEnv)
+        in runEval evaluation `shouldBe` Right (MalList [MalSymbol "+", MalNum 1, MalNum 2])
+
+      it "Can fail on a arbitrary incorrectly formatted string" $
+        let expression = MalList [MalSymbol "readString", MalString "(\" +1 2)"]
+            evaluation = Evaluator.evaluate (expression, startingEnv)
+        in isLeft (runEval evaluation) `shouldBe` True
+
+      -- it "Can slurp a file" $
+      --   let expression = MalList [MalSymbol "slurp", MalString "input.txt"]

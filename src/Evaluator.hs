@@ -1,21 +1,20 @@
 module Evaluator
 (evaluate) where
 
-import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), runEval, MalError(..), runEvalForTuple, Command(..))
+import Types                        (Sexp(..), Environment(..), RunTimeError(..), Eval(..), MalError(..), runEvalForTuple, Command(..), EnvironmentValue(..))
 import qualified Environment as Env (get, set, addLayer, removeLayer)
 import Control.Monad.Writer.Lazy (censor, listen, tell)
 import Control.Monad.Except
 
-evaluate :: (Sexp, Environment) -> Eval
-evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) = evaluateFinalExpression newEnv
-  where evaluateFinalExpression (Left error) =
-          throwError error
-        evaluateFinalExpression (Right (expression, environment)) =
+evaluate :: Monad m => (Sexp, Environment m) -> Eval m
+evaluate (MalList (MalSymbol "let" : MalList params : expression : []), env) =
+  do newEnv <- listen (bindLetVars params $ Env.addLayer env)
+     evaluateFinalExpression newEnv
+  where
+        evaluateFinalExpression (expression, environment) =
           censor Env.removeLayer $ evaluate (expression, environment)
 
-        newEnv = runEvalForTuple $ bindLetVars params $ Env.addLayer env
-
-        bindLetVars :: [Sexp] -> Environment -> Eval
+        bindLetVars :: Monad m => [Sexp] -> Environment m -> Eval m
         bindLetVars [] env = do tell env
                                 return expression
         bindLetVars (_ : []) env = do throwError $ MalEvalError "let param bindings do not match"
@@ -32,18 +31,18 @@ evaluate (MalList (MalSymbol "def" : MalSymbol key : value : []), env)
                                                                             --add case statements for error handling
 evaluate (MalList (MalSymbol "fn" : MalList params : functionBody : []), env)
   = do tell env
-       return $ MalFunction $ createFunction params functionBody
-  where createFunction :: Command
+       return $ Function $ createFunction params functionBody
+  where createFunction :: Monad m => Command m
         createFunction params body bindings environment = evaluate (body, functionEnvironment params bindings environment)
         functionEnvironment params bindings environment = foldl setToEnv environment $ zip params bindings
         setToEnv currentEnv (MalSymbol k, v) = Env.set k v currentEnv
                         -- setToEnv currentEnv (k, v) = 
 
 evaluate (MalList (MalSymbol "do" : params), env) = foldl foldEval initialValue params
-  where initialValue :: Eval
+  where initialValue :: Monad m => Eval m
         initialValue = do tell env
                           return $ MalList []
-        foldEval :: Eval -> Sexp -> Eval
+        foldEval :: Monad m => Eval m -> Sexp -> Eval m
         foldEval accumulator sexp = do (_, resultingEnv) <- listen accumulator
                                        evaluate (sexp, resultingEnv)
 
@@ -59,11 +58,11 @@ evaluate (command, env)
   = do tell env
        result <- evalAst (command, env)
        case result of
-         MalList (MalFunction f : list) -> f list env
+         MalList (Function f : list) -> f list env
          MalList (f : list) -> throwError $ MalEvalError $ (show f) ++ " is not a function"
          _ -> return result
 
-  where evalAst :: (Sexp, Environment) -> Eval
+  where evalAst :: Monad m => (Sexp, Environment m) -> Eval m
         evalAst (MalSymbol symbol, env) =
           do tell env
              case Env.get symbol env of

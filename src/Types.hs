@@ -9,7 +9,7 @@ module Types
 , RunTimeError(..)
 , Eval(..)
 , MalError(..)
-, runEval
+, EnvironmentValue(..)
 , runEvalForTuple
 ) where
 import qualified Data.Map as Map
@@ -22,19 +22,18 @@ type Bindings = [Sexp]
 type Body = Sexp
 type RunTimeError = String
 
-type Environment = [Map.Map String Sexp]
-type Eval = WriterT Environment (ExceptT MalError Identity) Sexp
-runEval :: Eval -> Either MalError Sexp
-runEval eval = runIdentity $ runExceptT result
-  where result = fst <$> runWriterT eval
+type Environment m = [Map.Map String (EnvironmentValue m)]
+type Eval m = WriterT (Environment m) (ExceptT MalError m) Sexp
 
-runEvalForTuple :: Eval -> Either MalError (Sexp, Environment)
-runEvalForTuple eval = runIdentity $ runExceptT $ runWriterT eval
+runEvalForTuple :: Eval IO -> IO (Either MalError (Sexp, Environment IO))
+runEvalForTuple eval = runExceptT $ runWriterT eval
 
-type AppliedCommand = Bindings -> Environment -> Eval
-type Command = Params -> Body -> AppliedCommand
+type AppliedCommand m = Bindings -> Environment m -> Eval m
+type Command m = Params -> Body -> AppliedCommand m
 
-data Sexp = MalNum Int | MalSymbol String | MalList [Sexp] | MalFunction AppliedCommand | MalBool Bool | MalString String
+data EnvironmentValue m = Value Sexp | Function (AppliedCommand m)
+
+data Sexp = MalNum Int | MalSymbol String | MalList [Sexp] | MalBool Bool | MalString String
             deriving (Eq)
 
 data MalError = MalParseError ParseError | MalEvalError String
@@ -44,13 +43,13 @@ instance Show Sexp where
   show (MalSymbol x) = x
   show (MalBool x) = show x
   show (MalString string) = "\"" ++ string ++ "\""
-  show (MalFunction appliedCommand) = "<FN>"
+  -- show (MalFunction appliedCommand) = "<FN>"
   show (MalList sexps) = "(" ++ foldl convertToString "" sexps ++ ")"
     where
       convertToString "" sexp = show sexp
       convertToString accumulator sexp = accumulator ++ " " ++ show sexp
 
-instance {-# OVERLAPS #-} Monoid Environment where
+instance {-# OVERLAPS #-} Monoid (Environment m) where
   mempty = []
   mappend x y = reverse $ mergeLists xList yList
     where xList = reverse x
@@ -67,9 +66,9 @@ instance Show MalError where
   show (MalParseError error) = show error
   show (MalEvalError error) = show error
 
-instance Eq AppliedCommand where
-  commandOne == commandTwo = runEval (commandOne bindings mempty ) == runEval (commandTwo bindings mempty)
-    where bindings = [MalNum 1, MalNum 2]
+-- instance Eq AppliedCommand where
+--   commandOne == commandTwo = runEval (commandOne bindings mempty ) == runEval (commandTwo bindings mempty)
+--     where bindings = [MalNum 1, MalNum 2]
 
 --instance Show Eval where
   --show eval = show $ runEval eval
